@@ -1,0 +1,4 @@
+#依赖的库
+libcoro: https://github.com/jbaldwin/libcoro.git
+concurrentqueue: https://github.com/cameron314/concurrentqueue.git
+resp: https://github.com/nousxiong/resp.git
