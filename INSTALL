@@ -2,3 +2,8 @@
 libcoro: https://github.com/jbaldwin/libcoro.git
 concurrentqueue: https://github.com/cameron314/concurrentqueue.git
 resp: https://github.com/nousxiong/resp.git
+
+
+安装：
+先进入libcoro 编译安装
+然后使用Xmake 安装
