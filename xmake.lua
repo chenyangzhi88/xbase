@@ -1,0 +1,72 @@
+includes("src/test/instruction_test.h")
+
+add_rules("mode.debug", "mode.release")
+package("concurrentqueue")
+    add_deps("cmake")
+    set_sourcedir(path.join(os.scriptdir(), "thirdparty", "concurrentqueue"))
+    on_install(function (package)
+        local configs = {}
+        table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))
+        table.insert(configs, "-DBUILD_SHARED_LIBS=" .. (package:config("shared") and "ON" or "OFF"))
+        import("package.tools.cmake").install(package, configs)
+    end)
+package_end()
+
+add_requires("concurrentqueue")
+
+target("dblib")
+    set_kind("static")
+    add_defines("LIBCORO_FEATURE_NETWORKING=ON")
+    add_includedirs("src", "thirdparty/", "thirdparty/libcoro/include/", "thirdparty/libcoro/Release/include/", "thirdparty/libcoro/vendor/c-ares/c-ares/include", 
+        "thirdparty/libcoro/vendor/c-ares/c-ares/build",  "thirdparty/libcoro/vendor/c-ares/c-ares/build/include")
+    add_files("src/**/*.cc")
+    add_links("pthread", "gtest", "coro")
+    add_linkdirs("thirdparty/libcoro/Release")
+    add_cxflags("-g", "-fcoroutines")
+    add_cxflags("-mavx2", "-msse4", "-msha")
+    add_cxflags("-std=c++20")
+    add_ldflags("-lxxhash", {force = true})
+target_end()
+
+target("rangedb")
+    add_defines("LIBCORO_FEATURE_NETWORKING=ON")
+    set_kind("binary")
+    add_deps("dblib")
+    add_includedirs("src", "thirdparty/", "thirdparty/libcoro/include/", "thirdparty/libcoro/Release/include/", "thirdparty/libcoro/vendor/c-ares/c-ares/include", 
+        "thirdparty/libcoro/vendor/c-ares/c-ares/build",  "thirdparty/libcoro/vendor/c-ares/c-ares/build/include")
+    add_files("src/*.cc")
+    add_cxflags("-g")
+    add_cxflags("-mavx2", "-msse4", "-msha", "-fcoroutines")
+    add_cxflags("-std=c++20")
+target_end()
+
+target("echo_server")
+    add_defines("LIBCORO_FEATURE_NETWORKING=ON")
+    set_kind("binary")
+    add_includedirs("src", "thirdparty/", "thirdparty/libcoro/include/", "thirdparty/libcoro/Release/include/", "thirdparty/libcoro/vendor/c-ares/c-ares/include", 
+        "thirdparty/libcoro/vendor/c-ares/c-ares/build",  "thirdparty/libcoro/vendor/c-ares/c-ares/build/include")
+    add_files("demo/*.cc")
+    add_deps("dblib")
+    add_cxflags("-g", "-fcoroutines")
+    add_linkdirs("thirdparty/libcoro/Release")
+    add_links("coro", "pthread")
+    add_cxflags("-std=c++20")
+target_end()
+
+for _, file in ipairs(os.files("tests/*.cc")) do
+    local name = path.basename(file)
+    target(name)
+        set_kind("binary")
+        add_deps("dblib")
+        add_defines("LIBCORO_FEATURE_NETWORKING=ON")
+        add_includedirs("src", "thirdparty/", "thirdparty/libcoro/include/", "thirdparty/libcoro/Release/include/", "thirdparty/libcoro/vendor/c-ares/c-ares/include", 
+            "thirdparty/libcoro/vendor/c-ares/c-ares/build",  "thirdparty/libcoro/vendor/c-ares/c-ares/build/include")
+        add_packages("gtest")
+        --set_default(false)
+        add_files(file)
+        add_tests("default")
+        add_cxflags("-std=c++20", "-fcoroutines")
+        add_cxflags("-g")
+        add_linkdirs("thirdparty/libcoro/Release")
+        add_links("coro", "pthread")
+end

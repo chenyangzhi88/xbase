@@ -1,0 +1,5 @@
+Language: Cpp
+IndentWidth: 4
+# 列的最大长度是 260
+ColumnLimit: 140
+AccessModifierOffset: -4
