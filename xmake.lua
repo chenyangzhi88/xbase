@@ -19,9 +19,9 @@ function set_common_configs(target)
     target:add("includedirs", common_includes)
     target:add("cxflags", common_cxflags_std, common_cxflags_coro)
 
-    if is_mode("debug") then
-        target:add("cxflags", debug_cxflags)
-    end
+    --if is_mode("debug") then
+    target:add("cxflags", common_cxflags_debug)
+    --end
     target:add("cxflags", common_cxflags_opt)
     target:add("links", common_links)
 end

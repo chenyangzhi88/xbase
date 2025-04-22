@@ -1,5 +1,4 @@
 #include "server/DB.h"
-#include "storage/walblock/WalManager.h"
 #include <gtest/gtest.h>
 rangedb::DB *db = new rangedb::DB();
 void DBTest() {
@@ -23,7 +22,7 @@ void DBInitTest() {
 }
 
 void TestPutOps(int start, rangedb::DB *db) {
-    const int key_size = 1 * 1000 * 1000 * 20;
+    const int key_size = 5 * 1000 * 1000;
     const auto p1 = std::chrono::system_clock::now();
     for (int i = start; i < key_size + start; i++) {
         std::string key = std::to_string(i);
@@ -45,6 +44,7 @@ void TestPutOps(int start, rangedb::DB *db) {
     }
     const auto p3 = std::chrono::system_clock::now();
     std::cout << "wal get cost time: " << std::chrono::duration_cast<std::chrono::microseconds>(p3 - p2).count() << "[µs]" << std::endl;
+    db->Close();
 }
 
 void TestBechmark() {
@@ -61,7 +61,7 @@ void TestBechmark() {
 }
 
 TEST(DBTest, base) {
-    rangedb::DB *db = new rangedb::DB();
+    //rangedb::DB *db = new rangedb::DB();
     // DBInitTest();
     TestPutOps(0, db);
 }

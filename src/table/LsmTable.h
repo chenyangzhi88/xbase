@@ -17,6 +17,8 @@ public:
     Status Put(Slice *source);
     Status GetFromLevelFile(Slice *source, Task *task);
     void BuildSstFile();
+    void FlushMemTable();
+    void Close();
 
 private:
     std::atomic<uint64_t> db_file_id_;
@@ -25,5 +27,6 @@ private:
     std::list<WalBlockFile*> unmutabl_mem_file_list_;
     std::thread build_thread_;
     FileManager *file_manager_;
+    std::atomic<bool> close_flag_;
 };
 } // namespace rangedb

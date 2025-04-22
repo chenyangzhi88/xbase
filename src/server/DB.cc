@@ -94,4 +94,6 @@ void DB::Init() {
     file_manager_->InitBlockFile(file_info_lst);
     InitIndex();
 }
+
+void DB::Close() { lsm_table_->Close(); } // namespace rangedb
 } // namespace rangedb

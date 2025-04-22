@@ -40,5 +40,7 @@ public:
     void Init();
 
     void InitIndex();
+
+    void Close();
 };
 } // namespace rangedb
