@@ -3,6 +3,7 @@
 #include "utils/Manifest.h"
 #include "utils/Slice.h"
 #include "utils/Status.h"
+#include <mutex>
 namespace rangedb {
 
 WalManager::WalManager() { file_manager_ = FileManager::GetInstance(); }

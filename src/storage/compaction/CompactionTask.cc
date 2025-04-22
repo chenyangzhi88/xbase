@@ -46,9 +46,9 @@ void CompactionTask::WalBlockToCompaction() {
     while (!iter->End()) {
         // construct two sst file
         Slice item = iter->Value();
-        if (flag) {
-            std::cout << "item: " << item.key_.ToString() << std::endl;
-        }
+        // if (flag) {
+        // std::cout << "item: " << item.key_.ToString() << std::endl;
+        //}
         auto status = sst_file.Append(&item);
         iter->Next();
         if (status == SST_BLOCK_FULL_ERROR) {

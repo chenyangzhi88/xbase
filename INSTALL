@@ -5,5 +5,10 @@ resp: https://github.com/nousxiong/resp.git
 
 
 安装：
-先进入libcoro 编译安装
-然后使用Xmake 安装
+1 先进入libcoro 编译安装
+2 安装c-ares
+    mkdir build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release
+    make install
+3. 然后使用Xmake 安装

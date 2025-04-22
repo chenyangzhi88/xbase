@@ -38,5 +38,7 @@ public:
     void FlushWal();
 
     void Init();
+
+    void InitIndex();
 };
 } // namespace rangedb

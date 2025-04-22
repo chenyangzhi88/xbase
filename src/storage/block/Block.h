@@ -7,6 +7,7 @@
 #include "utils/Comparator.h"
 #include "utils/Iterator.h"
 #include "utils/Slice.h"
+#include <memory>
 
 namespace rangedb {
 namespace storage {

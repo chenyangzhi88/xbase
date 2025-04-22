@@ -5,6 +5,7 @@
 #include "utils/Slice.h"
 #include "gtest/gtest.h"
 #include <cstdint>
+#include <list>
 #include <string>
 
 using namespace rangedb;

@@ -11,7 +11,7 @@ namespace rangedb {
 
 DB::DB(/* args */) {
     mem_vector_ = new RingHashVec();
-    wal_put_thread_.detach();
+    // wal_put_thread_.detach();
     wal_manager_ = std::make_shared<WalManager>();
     block_manager_ = BlockManager::GetInstance();
     lsm_table_ = new LsmTable(mem_vector_);
@@ -64,10 +64,27 @@ Status DB::Get(Slice *source) {
             }
         }
     }
-    return status;  
+    return status;
 }
 
 void DB::AppendWal() {}
+
+void DB::InitIndex() {
+    int MAX_LEVEL_NUM = 2;
+    for (int level = 0; level < MAX_LEVEL_NUM; level++) {
+        std::list<FileInfo *> file_lst;
+        file_manager_->GetLevelFile(level, &file_lst);
+        for (auto &file_info : file_lst) {
+            auto block = file_manager_->GetBlockFile(file_info->file_id_);
+            auto iter = block->NewIterator(ByteKeyComparator());
+            while (!iter->End()) {
+                ByteKey key = iter->Key();
+                Slice value = iter->Value();
+                mem_vector_->insert(&value);
+            }
+        }
+    }
+}
 
 void DB::Init() {
     manifest_ptr_ = Manifest::ManifestGetInstance();
@@ -75,28 +92,6 @@ void DB::Init() {
     manifest_ptr_->ReadFileRecode(&file_info_lst);
     file_manager_ = FileManager::GetInstance();
     file_manager_->InitBlockFile(file_info_lst);
-    std::list<FileInfo *> file_lst;
-    file_manager_->GetLevelFile(0, &file_lst);
-    // init index cache for wal block and level 0 block
-    for (auto &file_info : file_lst) {
-        auto block = file_manager_->GetBlockFile(file_info->file_id_);
-        auto iter = block->NewIterator(ByteKeyComparator());
-        while (!iter->End()) {
-            ByteKey key = iter->Key();
-            Slice value = iter->Value();
-            mem_vector_->insert(&value);
-        }
-    }
-    file_lst.clear();
-    file_manager_->GetLevelFile(1, &file_lst);
-    for (auto &file_info : file_lst) {
-        auto block = file_manager_->GetBlockFile(file_info->file_id_);
-        auto iter = block->NewIterator(ByteKeyComparator());
-        while (!iter->End()) {
-            ByteKey key = iter->Key();
-            Slice value = iter->Value();
-            mem_vector_->insert(&value);
-        }
-    }
+    InitIndex();
 }
 } // namespace rangedb

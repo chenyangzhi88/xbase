@@ -5,6 +5,7 @@
 #include "utils/Slice.h"
 #include <cmath>
 #include <shared_mutex>
+#include <mutex>
 
 namespace rangedb {
 typedef std::shared_mutex Lock;

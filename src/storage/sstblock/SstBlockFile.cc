@@ -141,7 +141,7 @@ public:
     void Next() override {
         assert(Valid());
         iter_->Next();
-        std::cout << "block_id: " << current_block_id_ << std::endl;
+        //std::cout << "block_id: " << current_block_id_ << std::endl;
         if (iter_->End() && current_block_id_ < num_restarts_) {
             current_block_id_++;
             block_ = block_manager_->GetBlock(file_id_, current_block_id_);

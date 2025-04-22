@@ -16,7 +16,7 @@ struct FileInfo {
     uint64_t block_num_;
     ByteKey min_key_;
     ByteKey max_key_;
-    uint8_t type;   // 0: mem, 1:sst 
+    uint8_t type;   // 0: mem, 1:sst
     uint8_t status; // 0: normal, 1: deleted
     uint8_t level;
     FileInfo() : file_id_(0), file_size_(0), block_num_(0), min_key_(), max_key_(), type(0), status(0), level(0) {}
@@ -75,6 +75,18 @@ struct FileInfo {
     }
 
     int Size() const { return sizeof(uint64_t) * 3 + sizeof(uint32_t) * 2 + min_key_.length_ + max_key_.length_ + 3 * sizeof(uint8_t); }
+    std::string FileInfoToString() const {
+        std::string s = "FileInfo[ID:" + std::to_string(file_id_);
+        s += ", Size:" + std::to_string(file_size_);
+        s += ", Blocks:" + std::to_string(block_num_);
+        s += ", Level:" + std::to_string(level);
+        s += ", Type:" + std::to_string(type);     // 1=sst
+        s += ", Status:" + std::to_string(status); // 0=normal, 1=deleted
+        s += ", MinKey:" + min_key_.ToString();
+        s += ", MaxKey:" + max_key_.ToString();
+        s += "]";
+        return s;
+    }
 };
 struct Manifest {
     uint64_t db_version_;
@@ -84,8 +96,8 @@ struct Manifest {
     FileHandlePtr file_handle_ptr_;
     inline static std::shared_ptr<Manifest> instance = nullptr;
     /* data */
-    Manifest(/* args */) {
-        file_handle_ptr_ = std::make_shared<FileHandle>("manifest");
+    explicit Manifest(std::string path = "./data/manifest") : db_version_(0), checkpoint_(0), key_version_(0), recode_num_(0) {
+        file_handle_ptr_ = std::make_shared<FileHandle>(path);
         file_handle_ptr_->Open();
         Init();
     }
@@ -183,6 +195,31 @@ struct Manifest {
             instance = std::make_shared<Manifest>();
         }
         return instance;
+    }
+
+    // --- Manifest::PrintDebugInfo 实现 ---
+    void PrintDebugInfo(std::ostream &os) {
+        std::vector<FileInfo> file_recodes;
+        ReadFileRecode(&file_recodes);
+        os << "--- Manifest Debug Info ---" << std::endl;
+        os << "File Handle Valid: " << std::boolalpha << (file_handle_ptr_ != nullptr) << std::endl;
+        os << "---------------------------" << std::endl;
+        os << "DB Version:        " << db_version_ << std::endl;
+        os << "Checkpoint:        " << checkpoint_ << std::endl;
+        os << "Key Version:       " << key_version_ << std::endl;
+        os << "Record Count(hdr): " << recode_num_ << std::endl; // 头文件中记录的数量
+        os << "---------------------------" << std::endl;
+        os << "Records: " << file_recodes.size() << " entries" << std::endl;
+
+        if (file_recodes.empty()) {
+            os << "  (No file records cached in memory)" << std::endl;
+        } else {
+            os << "  Cached File Records:" << std::endl;
+            for (size_t i = 0; i < file_recodes.size(); ++i) {
+                os << "    [" << i << "] " << file_recodes[i].FileInfoToString() << std::endl;
+            }
+        }
+        os << "--- End Manifest Debug Info ---" << std::endl;
     }
 };
 using ManifestPtr = std::shared_ptr<Manifest>;

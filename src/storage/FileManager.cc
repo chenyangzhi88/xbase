@@ -33,7 +33,7 @@ storage::BlockFilePtr FileManager::GetBlockFile(uint32_t file_id) {
 
 void FileManager::AddBlockFile(uint64_t file_id, storage::BlockFilePtr block_file) {
     block_files_[file_id] = block_file;
-    std::cout << "block file size: " << block_files_.size() << std::endl;
+    // std::cout << "block file size: " << block_files_.size() << std::endl;
 }
 
 storage::BlockFilePtr FileManager::BinaryRangeSearch(const ByteKey &key, int level) {

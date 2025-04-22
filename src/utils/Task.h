@@ -1,5 +1,6 @@
 #pragma once
 
+#include "coro/coro.hpp"
 #include "storage/block/BlockFile.h"
 #include "utils/Slice.h"
 namespace rangedb {

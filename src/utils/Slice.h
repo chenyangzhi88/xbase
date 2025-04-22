@@ -3,11 +3,9 @@
 #include <cstring>
 #include <string>
 #include <unistd.h>
-
-#include "coro/coro.hpp"
 #include "resp/resp/all.hpp"
-#include "utils/Status.h"
 #include "xxhash.h"
+
 namespace rangedb {
 constexpr uint64_t SLICE_HEADER_SIZE = sizeof(uint32_t) * 2 + sizeof(uint64_t) * 3 + 1;
 struct ByteKey {
@@ -74,9 +72,11 @@ struct Slice {
     void Serialize(int8_t *buffer) const;
     void Deserialize(int8_t *buffer);
     inline size_t Size() const { return SLICE_HEADER_SIZE + key_.Size() + data_.size(); }
-    void Print() {
-        std::cout << "key: " << key_.ToString() << " offset: " << offset_ << " version: " << version_ << " data_length: " << data_length_
-                  << " value: " << std::string(data_.data(), data_.size()) << std::endl;
+    std::string Print() const {
+        char buffer[1024];
+        std::snprintf(buffer, sizeof(buffer), "key: %s offset: %ld version: %ld data_length: %u value: %s", key_.ToString().c_str(),
+                      offset_, version_, data_length_, std::string(data_.data(), data_.size()).c_str());
+        return std::string(buffer);
     }
 };
 
