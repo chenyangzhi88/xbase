@@ -34,13 +34,17 @@ Status DB::Get(Slice *source) {
     Status status;
     if (!exist) {
         task->level_ = 2;
-        status = lsm_table_->GetFromLevelFile(source, task);
+        auto blcok_file = lsm_table_->GetFromLevelFile(source, task);
         if (task->flag) {
+
             return status;
         } else {
             // not found
         }
     } else {
+        if (task->done_ == true) {
+            return status;
+        }
         Slice *slice = task->slice_;
         uint64_t file_id = slice->file_id_;
         if (slice->block_type_ == 0) {
@@ -60,7 +64,21 @@ Status DB::Get(Slice *source) {
                     block->Read(slice);
                 }
             } else {
-                status = lsm_table_->GetFromLevelFile(source, task);
+                auto block_file = lsm_table_->GetFromLevelFile(source, task);
+                if (block_file == nullptr) {
+                    task->level_ += 1;
+                } else {
+                    bool exist_in_file = false;
+                    // status = block_file->MaybeExist(slice->key_, exist_in_file);
+                    if (exist_in_file) {
+                        bool found = false;
+                        status = block_file->FoundKey(slice, &found);
+                        if (!found) {
+                            task->level_ += 1;
+                            task->action_ = TaskType::GET_NEXT_LEVEL;
+                        }
+                    }
+                }
             }
         }
     }

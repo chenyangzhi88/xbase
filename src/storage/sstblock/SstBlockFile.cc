@@ -6,6 +6,7 @@
 #include "utils/Slice.h"
 #include "utils/Status.h"
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -31,6 +32,11 @@ BlockPtr SstBlockFile::ReadBlock(size_t inner_block_id) {
     return block;
 }
 
+Status SstBlockFile::Read(size_t inner_block_id, size_t offset, Slice *slice) {
+    file_handle_->Read(slice->data_.data(), BLOCK_SIZE, inner_block_id * BLOCK_SIZE + offset);
+    return Status::OK();
+}
+
 StatusCode SstBlockFile::Append(Slice *source) {
     if (block_list_.empty()) {
         AddBlock();
@@ -47,6 +53,54 @@ StatusCode SstBlockFile::Append(Slice *source) {
     }
     block->Append(source);
     return DB_SUCCESS;
+}
+
+int SstBlockFile::BinaraySearchBlock(const ByteKey &key) {
+    int left = 0;
+    int right = block_min_key_vec_.size() - 1;
+    while (left <= right) {
+        int mid = (left + right) / 2;
+        if (key < block_min_key_vec_[mid]) {
+            right = mid - 1;
+        } else if (key > block_min_key_vec_[mid]) {
+            left = mid + 1;
+        } else {
+            return mid;
+        }
+    }
+    return left;
+}
+
+Status SstBlockFile::FoundKey(Slice *item, bool* found) {
+    Status status;
+    int index = BinaraySearchBlock(item->key_);
+    if (index == -1) {
+        *found = false;
+        return status;
+    }
+    if (index < block_min_key_vec_.size()) {
+        auto block =  block_manager_->GetBlock(file_id_, index);
+        Iterator* iter = block->NewIterator(comparator_);
+        iter->Seek(item->key_);
+        if (iter->Valid()) {
+            status = iter->status();
+        }
+        if (item->key_ == item->key_) {
+            *found = true;
+            item->data_ = std::move(iter->Value().data_);
+            return status;
+        } else {
+            *found = false;
+            return status;
+        }
+    }
+    return status; 
+}
+
+Status SstBlockFile::MaybeExist(Slice* item, bool* exist) {
+    Status status;
+    *exist = bloom_filter_->KeyMayMatch(item->key_, filter_data_);
+    return status;
 }
 
 Status SstBlockFile::Flush() {

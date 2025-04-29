@@ -9,7 +9,7 @@
 #include <cstdint>
 namespace rangedb {
 
-LsmTable::LsmTable(RingHashVec *mem_vector) {
+LsmTable::LsmTable(RingHashVec *mem_vector) {  
     mem_vector_ = mem_vector;
     db_file_id_ = 0;
     mutable_mem_block_ = new WalBlockFile(db_file_id_.fetch_add(1));
@@ -33,11 +33,8 @@ Status LsmTable::GetFromMemBlock(Slice *source) {
     return Status::Failed("not found");
 }
 
-Status LsmTable::GetFromLevelFile(Slice *source, Task *task) {
-    // l1 read
-    Status status;
-    file_manager_->BinaryRangeSearch(source->key_, task->level_);
-    return status;
+storage::BlockFilePtr LsmTable::GetFromLevelFile(Slice *source, Task *task) {
+    return file_manager_->BinaryRangeSearch(source->key_, task->level_);
 }
 
 Status LsmTable::Put(Slice *source) {

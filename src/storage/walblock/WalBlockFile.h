@@ -28,7 +28,7 @@ public:
     ~WalBlockFile() = default;
 
 public:
-    storage::BlockPtr AddBlock();
+    storage::BlockPtr AddBlock();  
 
     StatusCode Append(Slice *source, uint32_t cur_block_id);
 
@@ -49,6 +49,9 @@ public:
     ByteKey GetMaxKey() override { return file_max_key_; }
     Status InitFromData(int8_t *data) override;
     inline uint64_t GetFileId() { return file_id_; }
+    Status FoundKey(Slice *key, bool *found) override  { return Status::OK(); };
+    Status MaybeExist(Slice *key, bool *exist) override { return Status::OK(); };
+    Status Read(size_t inner_block_id, size_t offset, Slice *slice) override { return Status::OK(); }; 
 
 private:
     class Iter;

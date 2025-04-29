@@ -1,12 +1,20 @@
 #include "utils/FileHandle.h"
+#include <cerrno>
+#include <cstring>
 #include <fcntl.h>
+#include <iostream>
 #include <unistd.h>
-
 namespace rangedb {
 
 bool FileHandle::Open() {
     fd_ = open(filename_.c_str(), O_RDWR | O_CREAT, 0666);
-    return fd_ > 0;
+    int error_code = errno;
+    if (fd_ == -1) {
+        std::cerr << "error: open file failed '" << filename_ << "'. cause by: " << strerror(error_code) << " (errno: " << error_code << ")"
+                  << std::endl;
+        return false;
+    }
+    return true;
 }
 
 bool FileHandle::Read(void *buffer, size_t size, off64_t offset) {

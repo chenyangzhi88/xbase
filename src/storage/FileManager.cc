@@ -39,6 +39,9 @@ void FileManager::AddBlockFile(uint64_t file_id, storage::BlockFilePtr block_fil
 storage::BlockFilePtr FileManager::BinaryRangeSearch(const ByteKey &key, int level) {
     int left = 0;
     int mid = 0;
+    if (sst_file_range_.size() <= level) {
+        return nullptr;
+    }
     std::vector<FileInfo *> &file_infos = sst_file_range_[level];
     int right = file_infos.size() - 1;
     while (left <= right) {

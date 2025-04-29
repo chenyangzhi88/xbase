@@ -15,7 +15,7 @@ public:
     ~LsmTable(){};
     Status GetFromMemBlock(Slice *source);
     Status Put(Slice *source);
-    Status GetFromLevelFile(Slice *source, Task *task);
+    storage::BlockFilePtr GetFromLevelFile(Slice *source, Task *task);
     void BuildSstFile();
     void FlushMemTable();
     void Close();

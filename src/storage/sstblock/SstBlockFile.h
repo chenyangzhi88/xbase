@@ -4,7 +4,9 @@
 #include "storage/FileManager.h"
 #include "storage/block/Block.h"
 #include "storage/block/BlockManager.h"
+#include "utils/Comparator.h"
 #include "utils/FileHandle.h"
+#include "utils/FileterPolicy.h"
 #include "utils/Slice.h"
 #include "utils/Status.h"
 #include <cstdint>
@@ -28,7 +30,7 @@ public:
 
     // Read data from file
     BlockPtr ReadBlock(size_t inner_block_id);
-
+    Status Read(size_t inner_block_id, size_t offset, Slice *slice);
     inline int GetBlockNum() override { return block_num_; }
 
     StatusCode Append(Slice *source) override;
@@ -48,6 +50,11 @@ public:
         file_max_key_ = max_key;
     }
 
+    Status FoundKey(Slice *key, bool *found) override;
+
+    Status MaybeExist(Slice *key, bool *exist) override;
+
+    int BinaraySearchBlock(const ByteKey &key);
 private:
     class Iter;
 
@@ -62,6 +69,9 @@ private:
     ByteKey file_max_key_;
     ByteKey file_min_key_;
     std::vector<ByteKey> block_min_key_vec_;
+    FilterPolicy *bloom_filter_;
+    std::string filter_data_;
+    Comparator *comparator_;
 };
 using SstBlockFilePtr = std::shared_ptr<SstBlockFile>;
 } // namespace storage

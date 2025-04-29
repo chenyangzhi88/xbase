@@ -1,6 +1,6 @@
 #include "server/DB.h"
 #include <gtest/gtest.h>
-rangedb::DB *db = new rangedb::DB();
+rangedb::DB *db;
 void DBTest() {
     rangedb::Slice *slice = new rangedb::Slice();
     // slice->key_ = rangedb::ByteKey((int8_t *)"key", 3);
@@ -61,8 +61,8 @@ void TestBechmark() {
 }
 
 TEST(DBTest, base) {
-    //rangedb::DB *db = new rangedb::DB();
-    // DBInitTest();
+    db = new rangedb::DB();
+    DBInitTest();
     TestPutOps(0, db);
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "db/mem/Row.h"
 #include "utils/Slice.h"
 #include "xxhash.h"
 #include <algorithm>
@@ -60,6 +61,7 @@ struct Slot {
     uint8_t block_type_;
     uint64_t version_;
     ByteKey key_;
+    TableRow* row_;
 };
 
 struct Group {
